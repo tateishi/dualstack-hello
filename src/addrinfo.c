@@ -57,7 +57,7 @@ static struct addrinfo *getaddrinfo_stream(const char *nodename, const char *ser
     return ai;
 }
 
-int list_addrinfo(char *nodename, char *servname) {
+int list_addrinfo(const char *nodename, const char *servname) {
     struct addrinfo *ai0;
     struct addrinfo *ai;
 
