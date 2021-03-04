@@ -31,29 +31,40 @@ static void print_nameinfo(struct sockaddr *addr, socklen_t addrlen) {
     printf("port: %s\n", servname);
 }
 
-int print_addrinfo(char *nodename, char *servname) {
-    int s;
-    struct addrinfo hints;
-    struct addrinfo *ai0;
-    struct addrinfo *ai;
+static void print_addrinfo(struct addrinfo *ai) {
+    print_int("ai_flags", ai->ai_flags);
+    print_int("ai_family", ai->ai_family);
+    print_int("ai_socktype", ai->ai_socktype);
+    print_int("ai_protocol", ai->ai_protocol);
+    print_nameinfo(ai->ai_addr, ai->ai_addrlen);
+}
+
+static struct addrinfo *getaddrinfo_stream(const char *nodename, const char *servname) {
     int g;
+    struct addrinfo hints;
+    struct addrinfo *ai;
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = PF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 
-    g = getaddrinfo(nodename, servname, &hints, &ai0);
+    g = getaddrinfo(nodename, servname, &hints, &ai);
     if (g) {
         fprintf(stderr, "%s", gai_strerror(g));
         exit(1);
     }
 
+    return ai;
+}
+
+int list_addrinfo(char *nodename, char *servname) {
+    struct addrinfo *ai0;
+    struct addrinfo *ai;
+
+    ai0 = getaddrinfo_stream(nodename, servname);
+
     for (ai = ai0; ai; ai = ai->ai_next) {
-        print_int("ai_flags", ai->ai_flags);
-        print_int("ai_family", ai->ai_family);
-        print_int("ai_socktype", ai->ai_socktype);
-        print_int("ai_protocol", ai->ai_protocol);
-        print_nameinfo(ai->ai_addr, ai->ai_addrlen);
+        print_addrinfo(ai);
     }
 
     return 0;
@@ -65,7 +76,7 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    print_addrinfo(argv[1], argv[2]);
+    list_addrinfo(argv[1], argv[2]);
 
     exit(0);
 }
